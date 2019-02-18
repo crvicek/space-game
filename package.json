@@ -2,9 +2,11 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc && node .",
+    "dev": "node ."
   },
   "keywords": [],
   "author": "",
@@ -23,5 +25,16 @@
     "typeorm": "^0.2.13",
     "typescript": "^3.3.3",
     "uws": "^99.0.0"
+  },
+  "devDependencies": {
+    "@types/kcors": "^2.2.3",
+    "@types/koa": "^2.0.48",
+    "@types/koa-bodyparser": "^4.2.2",
+    "@types/koa-multer": "^1.0.0",
+    "@types/koa-router": "^7.0.39",
+    "@types/mocha": "^5.2.6",
+    "@types/pg": "^7.4.13",
+    "@types/socket.io": "^2.1.2",
+    "@types/uws": "^0.13.2"
   }
 }
