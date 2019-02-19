@@ -31,10 +31,7 @@ export class ServerCanvas {
     this.lastRenderTimestamp = new Date();
   }
   
-  updatePositions() {
-    
-  }
-  
+  // Has to be == to the function with the same functionality on the client side
   render() {
     
   }
