@@ -1,18 +1,22 @@
 import React from 'react'
 import { Line } from 'react-konva'
 
- export default function MyShip() {
-  return (
-    <Line
-      x={40}
-      y={200}
-      points={[0, 0, 100, 0, 50, 100]}
-      tension={0.3}
-      closed
-      stroke="black"
-      fillLinearGradientStartPoint={{ x: 0, y: 0 }}
-      fillLinearGradientEndPoint={{ x: 0, y: 100 }}
-      fillLinearGradientColorStops={[0, "black", 1, "red"]}
-    />
-  )
+export default class Ship {
+
+  render(state) {
+    const color = ['red', 'lightblue', 'yellow', 'gray']
+    // const colorPick = () => Math.floor(Math.random()*color.length)
+    const { angle, positionX, positionY, context } = state;
+    const ctx = context
+    ctx.translate(positionX, positionY);
+    ctx.beginPath();
+    ctx.moveTo(20, 20);
+    ctx.lineTo(10, 60);
+    ctx.lineTo(30, 60);
+    ctx.lineTo(20, 20);
+    ctx.closePath();
+    ctx.fillStyle = color[1]
+    ctx.fill()
+
+  }
 }
