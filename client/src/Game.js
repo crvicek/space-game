@@ -45,34 +45,31 @@ export default class Game extends Component {
     if (event.keyCode === left || right) {
       this.setState({ stepX: 0 })
     }
-    // if (event.keyCode === right) {
-    //   this.setState({ stepX: 0 })
-    // }
     if (event.keyCode === up || down) {
       this.setState({ stepY: 0 })
     }
-    // if (event.keyCode === down) {
-    //   this.setState({ stepY: 0 })
-    // }
   }
 
   handleKeyPress = (event) => {
     if (event.keyCode === left) {
-      this.setState({ stepX: -5 })
+      this.setState({ stepX: - step })
     }
     if (event.keyCode === right) {
-      this.setState({ stepX: 5 })
+      this.setState({ stepX: step })
     }
     if (event.keyCode === up) {
-      this.setState({ stepY: -5 })
+      this.setState({ stepY: - step })
     }
     if (event.keyCode === down) {
-      this.setState({ stepY: 5 })
+      this.setState({ stepY: step })
     }
   }
 
   render() {
-    console.log('posX', this.state.positionX)
+    if (this.state.positionX > w) { this.setState({ positionX: 0 }) }
+    if (this.state.positionX < 0) { this.setState({ positionX: w }) }
+    if (this.state.positionY > h) { this.setState({ positionY: 0 }) }
+    if (this.state.positionY < 0) { this.setState({ positionY: h }) }
     return <Canvas angle={this.state.angle} x={this.state.positionX} y={this.state.positionY} />
   }
 }
@@ -95,11 +92,11 @@ class Canvas extends React.Component {
     ctx.clearRect(0, 0, width, height);
     // ctx.translate(x, w);
     // ctx.rotate(angle * Math.PI / 180);
-    ctx.fillStyle = '#4397AC'
-    // ctx.arc(100, 75, 50, 0, 2 * Math.PI)
-    // ctx.stroke();
-    ctx.fillStyle= '#ffff00'
-    ctx.fillRect(x - 20, y - 20, x + 20, y + 20);
+    ctx.fillStyle = 'gray'
+    ctx.arc(x, y, 50, 0, 2 * Math.PI)
+    ctx.stroke();
+    ctx.fill()
+    // ctx.fillRect(x - 20, y - 20, x + 20, y + 20);
     ctx.restore();
   }
 
