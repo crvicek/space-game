@@ -5,6 +5,7 @@ import * as Koa from 'koa';
 import Game from './entity/Game';
 import { IUser, Player } from './entity/Player';
 import { GAME_ACTION, uuid } from './shared';
+import { ServerStore } from './store';
 
 interface IServerState {
   games: Game[]
@@ -60,7 +61,9 @@ export class GameServer {
         name: 'Player 1',
       }, socket);
     });
-    
+  
+    const store = GameStore.getInstance();
+  
     this.server.listen(this.port);
   }
   
