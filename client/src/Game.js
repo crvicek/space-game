@@ -32,7 +32,7 @@ export default class Game extends Component {
     };
     this.ship = new Ship(this.state)
     this.fire = [new Fire(this.ship.pos)]
-    console.log('ship in framerate', this.ship.pos)
+    // console.log('ship in framerate', this.ship.pos)
     this.updateAnimationState = this.updateAnimationState.bind(this);
   }
 
@@ -41,6 +41,7 @@ export default class Game extends Component {
   }
 
   componentDidMount() {
+    console.log('component')
     this.rAF = requestAnimationFrame(this.updateAnimationState)
     const context = this.refs.mycanvas.getContext('2d');
     this.setState({ context: context });
@@ -73,7 +74,7 @@ export default class Game extends Component {
     // this.setState(prevState => ({ angle: prevState.angle + 1 }));
     // this.setState(prevState => ({ positionX: prevState.positionX + this.state.stepX }));
     // this.setState(prevState => ({ positionY: prevState.positionY + this.state.stepY }));
-    console.log('x:', this.state.positionX)
+    // console.log('x:', this.ship.pos.posX)
     const bcg = this.state.context
     bcg.save();
     bcg.clearRect(0, 0, 500, 500);
@@ -115,6 +116,7 @@ export default class Game extends Component {
   }
 
   handleKeyPress = (event) => {
+    // event.preventDefault()
     if (event.keyCode === left) {
       this.setState({ stepX: - step })
     }
@@ -128,7 +130,6 @@ export default class Game extends Component {
     //   this.setState({ stepY: step })
     // }
     if (event.keyCode === space) {
-
       const bullet = new Fire(this.ship.pos)
       this.addObject(bullet, 'fire')
       // this.setState({ shoot: true })
@@ -136,7 +137,10 @@ export default class Game extends Component {
   }
 
   render() {
-    console.log(this.fire)
+
+    this.fire = this.fire.filter(blt => blt.delete === false)
+    console.log('ship',this.ship, 'time', Date.now())
+
 
     if (this.state.positionX > w) { this.setState({ positionX: 0 }) }
     if (this.state.positionX < 0) { this.setState({ positionX: w }) }
