@@ -1,19 +1,11 @@
-import { IPlayerActiveKeys, Player } from './Player';
+import { IPlayerKeys, Player } from './Player';
 import { GAME_STATE, uuid } from '../shared';
 import { ServerCanvas } from './ServerCanvas';
-// import { ServerStore } from '../store';
+import { Server } from '../Server';
 
-export type GameState = number;
+export type GameState = -1 | 0 | 1 | number;
 
-export interface IGameState {
-  id: string;
-  startedAt: Date;
-  gameState: GameState;
-  player1: Player;
-  player2: Player;
-}
-
-export default class Game implements IGameState {
+export default class Game {
   
   id: string;
   startedAt: Date;
@@ -21,52 +13,46 @@ export default class Game implements IGameState {
   player1: Player;
   player2: Player;
   canvas: ServerCanvas;
+  server: Server;
   
-  constructor(player1: Player, player2?: Player) {
-  
-    // ServerStore.update({
-    //   id: uuid(),
-    //   startedAt: new Date(),
-    //   player1: player1,
-    //   player2: null,
-    //   gameState: GAME_STATE.waiting,
-    // });
-  
+  constructor(server: Server, player1: Player) {
     this.id = uuid();
     this.startedAt = new Date();
     this.player1 = player1;
     this.player1.game = this;
     this.player2 = null;
     this.gameState = GAME_STATE.waiting;
+    this.canvas = null;
+    this.server = server;
+    console.log(`[${this.id}]: New game created - waiting for second player`);
   }
   
-  assignPlayer(player: Player) {
-    this.player2 = player;
+  public assignPlayerTwo(playerTwo: Player) {
+    this.player2 = playerTwo;
     this.player2.game = this;
-    // ServerStore.update({
-    //   player2: player,
-    // });
+    this.canvas = new ServerCanvas(this.player1, this.player2);
+    console.log(`[${this.id}]: Player assigned to empty spot`);
     this.startGame();
   }
   
-  emitPlayerAction(from: string, action: IPlayerActiveKeys) {
-    if (this.player1.user.id === from)
-      this.player2.socket.emit('@action/actionPropagation', {
-        keys: action,
-        timestamp: Date.now(),
-      });
-    if (this.player2.user.id === from)
-      this.player1.socket.emit('@action/actionPropagation', {
-        keys: action,
-        timestamp: Date.now(),
-      });
+  public broadcastPlayerAction(from: string, action: IPlayerKeys) {
+    const to = from === this.player1.id ? this.player2 : this.player1;
+    to.socket.emit('@action/actionBroadcast', {
+      keys: action,
+    });
   }
   
-  startGame() {
-    console.log('Start game');
+  public startGame() {
     this.gameState = GAME_STATE.started;
-    this.player1.startListening();
-    this.player2.startListening();
+    this.player1.startListeningForPlayerActions();
+    this.player2.startListeningForPlayerActions();
+    console.log(`[${this.id}]: Started`);
   }
   
+  public stopGame(whoEnded: Player) {
+    const whoStayed = whoEnded === this.player1 ? this.player2 : this.player1;
+    !!whoStayed && whoStayed.socket.disconnect(true);
+    console.log(`[${this.id}]: Player ${whoEnded.id} disconnected`);
+    this.server.destroyGame(this);
+  }
 }

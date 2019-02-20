@@ -1,17 +1,14 @@
-// function createReducer2(initialState, handlers) {
-//   return function reducer(state = initialState, action) {
-//     if (handlers.hasOwnProperty(action.type)) {
-//       return handlers[action.type](state, action);
-//     } else {
-//       return state;
-//     }
-//   };
-// }
-//
-// export function createReducer(initialState, handlers) {
-//   const reducer = (state = initialState, action) {
-//     if(handlers.hasOwnProperty(action.type)) {
-//      
-//     }
-//   }
-// }
+export const STORE_ACTIONS = {
+  update: 'UPDATE',
+};
+
+export const generateReducer = (store: string, initialState) => {
+  return function reducer<T>(state: T = initialState, action): T {
+    switch (action.type) {
+      case (`@${store}/${STORE_ACTIONS.update}`):
+        return { ...state, ...action.payload };
+      default:
+        return state;
+    }
+  };
+};

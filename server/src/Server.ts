@@ -3,68 +3,58 @@ import { useKoaServer } from "routing-controllers";
 import * as socketio from 'socket.io';
 import * as Koa from 'koa';
 import Game from './entity/Game';
-import { IUser, Player } from './entity/Player';
-import { GAME_ACTION, uuid } from './shared';
-import { ServerStore } from './store';
+import { Player } from './entity/Player';
+import { uuid } from './shared';
 
-interface IServerState {
-  games: Game[]
-}
-
-export class GameServer {
+export class Server {
   
-  port = undefined;
-  app = undefined;
-  server = undefined;
-  io = undefined;
+  port = process.env.PORT || 4000;
+  app: any;
+  server: any;
+  io: any;
+  games: Game[];
   
-  state: IServerState = {
-    games: [],
-  };
   
   constructor() {
-    this.port = process.env.PORT || 4000;
-    this.app = new Koa();
-    this.server = require('http').createServer(this.app.callback());
-    this.io = socketio(this.server);
-    useKoaServer(this.app, {
-      cors: true,
-    });
+    this.games = [];
   }
   
   getLastGame(): Game {
-    if (this.state.games.length < 1) return null;
-    return this.state.games[this.state.games.length - 1];
+    if (this.games.length < 1) return null;
+    return this.games[this.games.length - 1];
   }
   
-  assignGame(user: IUser, socket: any) {
+  assignGame(name: string, socket: any) {
+    const player = new Player(name, socket);
+    if (this.games.length === 0 || this.getLastGame().player2 !== null)
+      this.games.push(new Game(this, player));
+    else this.getLastGame().assignPlayerTwo(player);
     
-    const player = new Player(user, socket);
-    if (this.state.games.length === 0 || this.getLastGame().player2 !== null) {
-      const game = new Game(player);
-      this.state.games.push(game);
-    } else {
-      const game = this.getLastGame();
-      game.assignPlayer(player);
-    }
+  }
   
-    console.log('AssignGame: ');
-    console.log(this.state.games);
+  destroyGame(game: Game) {
+    this.games.splice(this.games.indexOf(game), 1);
+    console.log(`[${game.id}]: Game destroyed`);
+  }
+  
+  listenForConnections() {
+    this.io.on('connection', socket => {
+      console.log('Client connected');
+      this.assignGame(null, socket);
+    });
   }
   
   start() {
-    console.log('Server up.');
-    this.io.on('connection', socket => {
-      console.log('Connected');
-      this.assignGame({
-        id: uuid(),
-        name: 'Player 1',
-      }, socket);
+    this.app = new Koa();
+    this.server = require('http').createServer(this.app.callback());
+    this.io = socketio(this.server);
+    this.games = [];
+    useKoaServer(this.app, {
+      cors: true,
     });
-  
-    const store = GameStore.getInstance();
-  
     this.server.listen(this.port);
-  }
+    this.listenForConnections();
   
+    console.log(`Server up and running on port: ${this.port}`);
+  }
 }

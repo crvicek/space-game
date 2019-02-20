@@ -1,8 +1,8 @@
-import { GAME_ACTION } from '../shared';
+import { GAME_ACTION, uuid } from '../shared';
 import { ICanvasElementPosition } from './ServerCanvas';
 import Game from './Game';
 
-export interface IPlayerActiveKeys {
+export interface IPlayerKeys {
   up: boolean;
   left: boolean;
   right: boolean;
@@ -10,31 +10,28 @@ export interface IPlayerActiveKeys {
 }
 
 export interface IPlayerActionKeysData {
-  keys: IPlayerActiveKeys
+  keys: IPlayerKeys
   currentPosition: ICanvasElementPosition
   timestamp: Date
 }
 
-export interface IPAHistory extends IPlayerActiveKeys {
+export interface IPAHistory extends IPlayerKeys {
   timestamp: Date;
-}
-
-export interface IUser {
-  id?: string
-  name: string
 }
 
 export class Player {
   
-  user: IUser;
-  activeKeys: IPlayerActiveKeys;
+  id: string;
+  name: string;
+  activeKeys: IPlayerKeys;
   history: IPAHistory[];
   score: number;
   socket: any;
   game: Game;
   
-  constructor(user: IUser, socket: any) {
-    this.user = user;
+  constructor(name: string, socket: any) {
+    this.id = uuid();
+    this.name = name;
     this.score = 0;
     this.activeKeys = {
       up: false,
@@ -45,19 +42,22 @@ export class Player {
     this.history = [];
     this.score = 0;
     this.socket = socket;
+    this.socket.on('disconnect', () => this.playerDisconnected());
   }
   
-  public startListening = () => {
-    const socket = this.socket;
-    socket.on(GAME_ACTION.receiveInput, (data: IPlayerActionKeysData) => {
+  private playerDisconnected() {
+    this.game.stopGame(this);
+  }
+  
+  public startListeningForPlayerActions = () => {
+    this.socket.on(GAME_ACTION.receiveInput, (data: IPlayerActionKeysData) => {
       this.processPlayerAction(data);
     });
   };
   
   private processPlayerAction = (data: IPlayerActionKeysData) => {
-    console.log(data);
     this.activeKeys = { ...this.activeKeys, ...data.keys };
-    this.game.emitPlayerAction(this.user.id, this.activeKeys);
+    this.game.broadcastPlayerAction(this.id, this.activeKeys);
     this.history.unshift({ ...this.activeKeys, timestamp: data.timestamp });
     if (this.history.length > 30) this.history.pop();
   };
