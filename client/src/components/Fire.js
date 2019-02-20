@@ -11,10 +11,10 @@ export default class Fire {
     }
   }
 
-  acc() {
-    this.vel.x -= Math.sin(-this.angle * Math.PI / 180) * 0.3;
-    this.vel.y -= Math.cos(-this.angle * Math.PI / 180) * 0.3;
-  }
+  // acc() {
+  //   this.vel.x -= Math.sin(-this.angle * Math.PI / 180) * 0.3;
+  //   this.vel.y -= Math.cos(-this.angle * Math.PI / 180) * 0.3;
+  // }
 
   destroy() {
     this.delete = true
@@ -22,13 +22,13 @@ export default class Fire {
   render(state) {
     // console.log('posX', this.posX)
 
-    this.acc()
-    this.posX += this.vel.x
-    this.posY += this.vel.y
+    // this.acc()
+    // this.posX += this.vel.x * 0.5
+    // this.posY += this.vel.y * 0.5
 
     if (
-      this.posX > window.innerHeight || this.posX < 0 ||
-      this.posY > window.innerWidth || this.posY < 0
+      this.posX > 900 || this.posX < 0 ||
+      this.posY > 600 || this.posY < 0
     ) this.destroy()
 
     const fr = state.context

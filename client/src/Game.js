@@ -3,8 +3,8 @@ import Ship from './components/MyShip'
 import Planet from './components/Planet'
 import Fire from './components/Fire';
 
-const w = window.innerWidth
-const h = window.innerHeight
+const w = 900
+const h = 600
 
 const left = 37
 const up = 38
@@ -26,12 +26,35 @@ export default class Game extends Component {
       stepX: 0,
       stepY: 0,
       context: null,
-      w: window.innerWidth,
-      h: window.innerHeight,
+      w: w,
+      h: h,
       shoot: false,
-    };
+      lastFire: 0,
+    }
+    // Communication with a server
+    this.activeKeys = {
+      up: false,
+      left: false,
+      right: false,
+      space: false,
+    }
+
+    this.elementPosition = {
+      x: 0,
+      y: 0
+    }
+
+    this.serverExport = {
+      keys: this.activeKeys,
+      currentPosition: this.elementPosition,
+      timestamp: Date.now()
+    }
+
+
+
+    // Generating the objects
     this.ship = new Ship(this.state)
-    this.fire = [new Fire(this.ship.pos)]
+    this.fire = []
     // console.log('ship in framerate', this.ship.pos)
     this.updateAnimationState = this.updateAnimationState.bind(this);
   }
@@ -46,34 +69,17 @@ export default class Game extends Component {
     const context = this.refs.mycanvas.getContext('2d');
     this.setState({ context: context });
 
-    document.addEventListener('keydown', this.handleKeyPress)
-    document.addEventListener('keyup', this.stopKeyPress)
-  }
+    document.addEventListener('keydown', this.handleKeyState)
+    document.addEventListener('keyup', this.stopKeyState)
 
-  componentDidUpdate() {
-    // const { angle, x, y } = this.props;
-    // const width = canvas.width;
-    // const height = canvas.height;
   }
 
   componentWillUnmount() {
     cancelAnimationFrame(this.rAF);
   }
 
-  // shootSth() {
-  //   if(this.state.shoot === true)
-  //   this.createNew()
-  // }
-
-  // createNew(object){
-  //   object = new 
-  // }
-
   // Handles all animations
   updateAnimationState() {
-    // this.setState(prevState => ({ angle: prevState.angle + 1 }));
-    // this.setState(prevState => ({ positionX: prevState.positionX + this.state.stepX }));
-    // this.setState(prevState => ({ positionY: prevState.positionY + this.state.stepY }));
     // console.log('x:', this.ship.pos.posX)
     const bcg = this.state.context
     bcg.save();
@@ -89,12 +95,37 @@ export default class Game extends Component {
     // Ship
     this.ship.render(this.state)
     // spcCraft.render(this.state)
-    
-    if(this.fire.length > 0) this.fire.map(x => x.render(this.state))
 
+    if (this.fire.length > 0) this.fire.map(x => x.render(this.state))
 
+    // Handle key actions
+    //   switch (this.activeKeys) {
+    //     case up:
+    //       this.setState({ stepY: - step })
+    //     case left:
+    //       this.setState({ stepX: -step })
+    //     case right:
+    //       this.setState({ stepX: step })
+    //     default:
+    //       this.setState({
+    //         stepX: 0,
+    //         stepY: 0,
+    //       })
+    // }
 
+    this.activeKeys.up ? this.setState({ stepY: - step }) : this.setState({ stepY: 0 })
 
+    if (this.activeKeys.right) { this.setState({ stepX: step }) }
+    else if (this.activeKeys.left) { this.setState({ stepX: -step }) }
+    else { this.setState({ stepX: 0 }) }
+
+    if (this.activeKeys.space && Date.now() - this.state.lastFire > 200) {
+      const bullet = new Fire(this.ship.pos)
+      this.addObject(bullet, 'fire')
+      this.setState({lastFire: Date.now()})
+    }
+
+    console.log(this.fire)
 
     // Clear frame before redrawing
     bcg.restore();
@@ -103,52 +134,85 @@ export default class Game extends Component {
     this.rAF = requestAnimationFrame(this.updateAnimationState);
   }
 
-  stopKeyPress = (event) => {
-    if (event.keyCode === left || right) {
-      this.setState({ stepX: 0 })
+  
+  stopKeyState = (event) => {
+    if (event.keyCode === left) {
+      this.activeKeys.left = false
+    }
+    if (event.keyCode === right) {
+      this.activeKeys.right = false
     }
     if (event.keyCode === up) {
-      this.setState({ stepY: 0 })
+      this.activeKeys.up = false
     }
     if (event.keyCode === space) {
-      this.setState({ shoot: false })
+      this.activeKeys.space = false
     }
   }
 
-  handleKeyPress = (event) => {
-    // event.preventDefault()
+  handleKeyState = (event) => {
     if (event.keyCode === left) {
-      this.setState({ stepX: - step })
+      this.activeKeys.left = true
     }
     if (event.keyCode === right) {
-      this.setState({ stepX: step })
+      this.activeKeys.right = true
     }
     if (event.keyCode === up) {
-      this.setState({ stepY: - step })
+      this.activeKeys.up = true
     }
-    // if (event.keyCode === down) {
-    //   this.setState({ stepY: step })
-    // }
     if (event.keyCode === space) {
-      const bullet = new Fire(this.ship.pos)
-      this.addObject(bullet, 'fire')
-      // this.setState({ shoot: true })
+      this.activeKeys.space = true
     }
   }
+
+  // stopKeyPress = (event) => {
+  //   if (event.keyCode === left || right) {
+  //     this.setState({ stepX: 0 })
+  //   }
+  //   if (event.keyCode === up) {
+  //     this.setState({ stepY: 0 })
+  //   }
+  //   if (event.keyCode === space) {
+  //     this.setState({ shoot: false })
+  //   }
+  // }
+
+  // handleKeyPress = (event) => {
+  //   // event.preventDefault()
+  //   if (event.keyCode === left) {
+  //     this.setState({ stepX: - step })
+  //   }
+  //   if (event.keyCode === right) {
+  //     this.setState({ stepX: step })
+  //   }
+  //   if (event.keyCode === up) {
+  //     this.setState({ stepY: - step })
+  //   }
+  //   // if (event.keyCode === down) {
+  //   //   this.setState({ stepY: step })
+  //   // }
+  //   if (event.keyCode === space) {
+  //     const bullet = new Fire(this.ship.pos)
+  //     this.addObject(bullet, 'fire')
+  //     // this.setState({ shoot: true })
+  //   }
+  // }
 
   render() {
 
     this.fire = this.fire.filter(blt => blt.delete === false)
-    console.log('ship',this.ship, 'time', Date.now())
+    // console.log('ship',this.ship, 'time', Date.now())
 
 
+
+    // Handle overflow
     if (this.state.positionX > w) { this.setState({ positionX: 0 }) }
     if (this.state.positionX < 0) { this.setState({ positionX: w }) }
     if (this.state.positionY > h) { this.setState({ positionY: 0 }) }
     if (this.state.positionY < 0) { this.setState({ positionY: h }) }
 
     return (
-      <canvas width={window.innerWidth} height={window.innerHeight} ref='mycanvas'></canvas>
+      <canvas width={w} height={h} ref='mycanvas' className='Game'></canvas>
     )
   }
 }

@@ -1,4 +1,3 @@
-import Fire from "./Fire";
 
 export default class Ship {
   constructor(st) {
@@ -23,13 +22,6 @@ export default class Ship {
   // Render fire
   render(state) {
     const { context, stepX, stepY, w, h, shoot } = state;
-
-    // if(shoot){
-    //   const fire = new Fire(this.pos.fire);
-    //   Object.create(fire)
-    // this.lastShot = Date.now();
-    // }
-    // if(shoot) Fire.create(this.pos)
 
     // Rotate
     if (stepX) { this.pos.angle += stepX }
