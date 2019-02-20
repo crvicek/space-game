@@ -39,7 +39,6 @@ export class GameServer {
   assignGame(user: IUser, socket: any) {
     
     const player = new Player(user, socket);
-    
     if (this.state.games.length === 0 || this.getLastGame().player2 !== null) {
       const game = new Game(player);
       this.state.games.push(game);
@@ -47,11 +46,15 @@ export class GameServer {
       const game = this.getLastGame();
       game.assignPlayer(player);
     }
+  
+    console.log('AssignGame: ');
+    console.log(this.state.games);
   }
   
   start() {
-    
+    console.log('Server up.');
     this.io.on('connection', socket => {
+      console.log('Connected');
       this.assignGame({
         id: uuid(),
         name: 'Player 1',

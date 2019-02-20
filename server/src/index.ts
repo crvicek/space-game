@@ -1,15 +1,8 @@
 import 'reflect-metadata';
+import { GameServer } from './Server';
 
 const port = process.env.PORT || 4000;
 
+const server = new GameServer();
 
-// io.on('connection', socket => {
-//  
-// });
-//
-// server.listen(port);
-//
-// database()
-//   .then(() => {
-//     server.listen(port);
-//   });
+server.start();

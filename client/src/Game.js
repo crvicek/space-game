@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import Ship from './components/MyShip'
 import Planet from './components/Planet'
 import Fire from './components/Fire';
+import io from 'socket.io-client';
+
 
 const w = 900
 const h = 600
@@ -56,6 +58,12 @@ export default class Game extends Component {
     this.ship = new Ship(this.state)
     this.fire = []
     // console.log('ship in framerate', this.ship.pos)
+  
+    this.socketConnection = io('http://localhost:4000');
+  
+    console.log(this.socketConnection);
+  
+  
     this.updateAnimationState = this.updateAnimationState.bind(this);
   }
 
@@ -64,7 +72,6 @@ export default class Game extends Component {
   }
 
   componentDidMount() {
-    console.log('component')
     this.rAF = requestAnimationFrame(this.updateAnimationState)
     const context = this.refs.mycanvas.getContext('2d');
     this.setState({ context: context });
@@ -124,8 +131,8 @@ export default class Game extends Component {
       this.addObject(bullet, 'fire')
       this.setState({lastFire: Date.now()})
     }
-
-    console.log(this.fire)
+  
+    // console.log(this.fire)
 
     // Clear frame before redrawing
     bcg.restore();
@@ -163,6 +170,8 @@ export default class Game extends Component {
     if (event.keyCode === space) {
       this.activeKeys.space = true
     }
+    console.log('Emitting: ' + this.serverExport);
+    this.socketConnection.emit('@actions/RECEIVE_INPUT', this.serverExport);
   }
 
   // stopKeyPress = (event) => {

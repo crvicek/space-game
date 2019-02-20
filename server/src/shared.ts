@@ -9,3 +9,8 @@ export const GAME_STATE = {
 export const GAME_ACTION = {
   receiveInput: '@actions/RECEIVE_INPUT',
 };
+
+export const GAME_AREA = {
+  width: 1200,
+  height: 700,
+};

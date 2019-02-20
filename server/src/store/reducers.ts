@@ -1,18 +1,45 @@
 import { combineReducers } from 'redux';
-import Game from '../entity/Game';
+import { IGameState } from '../entity/Game';
 
-interface IServerState {
-  games: Game[]
+const initGameState = {};
+//
+// function GameState(state = initGameState, action) {
+//   switch (action.type) {
+//     case STORE_ACTIONS.update:
+//       return {
+//         ...state,
+//         ...action.payload,
+//       };
+//     default:
+//       return state;
+//   }
+// }
+
+export const STORE = {
+  game: 'gameState',
+};
+export const STORE_ACTIONS = {
+  update: 'update',
 };
 
-const InitServerState: IServerState = {
-  games: []
+const generateReducers = (initialStates) => {
+  return initialStates.map((stateDefinition) => {
+    const reducerDefinition = {};
+    return reducerDefinition[stateDefinition.name] = (function (state: object = stateDefinition.definition, action) {
+        switch (action.type) {
+          case STORE_ACTIONS.update:
+            return { ...state, ...action.payload };
+          default:
+            return state;
+        }
+      }
+    );
+  });
 };
 
-function ServerState(state = InitServerState, action) {
-  switch () {
-    
-  }
-}
+const stores = [{
+  name: 'GameState',
+  definition: initGameState,
+}];
 
-export default combineReducers([serverState]);
+export default combineReducers(generateReducers(stores));

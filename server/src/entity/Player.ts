@@ -1,8 +1,8 @@
 import { GAME_ACTION } from '../shared';
+import { ICanvasElementPosition } from './ServerCanvas';
 
 export interface IPlayerActiveKeys {
   up: boolean;
-  down: boolean;
   left: boolean;
   right: boolean;
   space: boolean;
@@ -10,6 +10,7 @@ export interface IPlayerActiveKeys {
 
 export interface IPlayerActionKeysData {
   keys: IPlayerActiveKeys
+  currentPosition: ICanvasElementPosition
   timestamp: Date
 }
 
@@ -35,7 +36,6 @@ export class Player {
     this.score = 0;
     this.activeKeys = {
       up: false,
-      down: false,
       left: false,
       right: false,
       space: false,
@@ -43,6 +43,19 @@ export class Player {
     this.history = [];
     this.score = 0;
     this.socket = socket;
+    //
+    // ServerStore.update({
+    //   player1: {
+    //     user: user,
+    //     score: 0,
+    //     activeKeys: {
+    //       up: false, left: false, right: false, space: false,
+    //     },
+    //     history: [],
+    //     // score: 0,
+    //     socket: socket,
+    //   },
+    // });
   }
   
   public startListening = () => {
@@ -53,6 +66,7 @@ export class Player {
   };
   
   private processPlayerAction = (data: IPlayerActionKeysData) => {
+    console.log(data);
     this.activeKeys = { ...this.activeKeys, ...data.keys };
     this.history.unshift({ ...this.activeKeys, timestamp: data.timestamp });
     if (this.history.length > 30) this.history.pop();
