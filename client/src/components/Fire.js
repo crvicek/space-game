@@ -2,6 +2,7 @@ export default class Fire {
   constructor(st) {
     this.posX = st.posX
     this.posY = st.posY
+    
   }
 
   render(state) {

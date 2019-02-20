@@ -106,10 +106,10 @@ export default class Game extends Component {
     if (event.keyCode === left || right) {
       this.setState({ stepX: 0 })
     }
-    if (event.keyCode === up || down) {
+    if (event.keyCode === up) {
       this.setState({ stepY: 0 })
     }
-    if (event.keyCode === up || down) {
+    if (event.keyCode === space) {
       this.setState({ shoot: false })
     }
   }
@@ -124,9 +124,9 @@ export default class Game extends Component {
     if (event.keyCode === up) {
       this.setState({ stepY: - step })
     }
-    if (event.keyCode === down) {
-      this.setState({ stepY: step })
-    }
+    // if (event.keyCode === down) {
+    //   this.setState({ stepY: step })
+    // }
     if (event.keyCode === space) {
 
       const bullet = new Fire(this.ship.pos)
