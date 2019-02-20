@@ -1,63 +1,42 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import User, { Player } from './User';
+import { Player } from './Player';
+import { GAME_STATE, uuid } from '../shared';
+import { ServerCanvas } from './ServerCanvas';
 
-export type GameState = 'waitingForPlayers' | 'started' | 'ended';
+export type GameState = number;
 
-export interface ICanvasElementPosition {
-  x: number;
-  y: number;
-}
-
-export interface ICanvasElement {
-  id: number | string;
-  pos: ICanvasElementPosition;
-}
-
-export class ServerCanvas {
-  
-  public elements = {
-    players: {
-      one: <ICanvasElement>undefined,
-      two: <ICanvasElement>undefined,
-    },
-    objects: <ICanvasElement[]>[],
-  };
-  public lastRenderTimestamp: Date;
-  
-  constructor(playerOnePos: ICanvasElement, playerTwoPos: ICanvasElement, preSetObjects: ICanvasElement[]) {
-    this.elements.players.one = playerOnePos;
-    this.elements.players.two = playerTwoPos;
-    this.elements.objects = [...preSetObjects];
-    this.lastRenderTimestamp = new Date();
-  }
-  
-  // Has to be == to the function with the same functionality on the client side
-  render() {
-    
-  }
-  
-  start() {
-    
-  }
-  
-}
-
-@Entity()
-export default class Game {
-  
-  @PrimaryGeneratedColumn('uuid')
+export interface IGame {
   id: string;
-  
-  @Column()
   startedAt: Date;
-  
-  @Column()
-  state: GameState;
-  
-  @Column()
+  gameState: GameState;
   player1: Player;
-  
-  @Column()
   player2: Player;
+}
+
+export default class Game implements IGame {
+  
+  id: string;
+  startedAt: Date;
+  gameState: GameState;
+  player1: Player;
+  player2: Player;
+  canvas: ServerCanvas;
+  
+  constructor(player1: Player, player2?: Player) {
+    this.id = uuid();
+    this.startedAt = new Date();
+    this.player1 = player1;
+    this.player2 = undefined;
+    this.gameState = GAME_STATE.waiting;
+  }
+  
+  assignPlayer(player: Player) {
+    this.player2 = player;
+  }
+  
+  startGame() {
+    this.gameState = GAME_STATE.started;
+    this.player1.startListening();
+    this.player2.startListening();
+  }
   
 }
