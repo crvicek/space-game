@@ -1,6 +1,6 @@
 import { Player } from './Player';
 import Game from './Game';
-import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_AREA } from '../../../common/common';
+import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_AREA } from '../common';
 
 
 export interface ICanvasElementPosition {

@@ -1,7 +1,7 @@
 import { IPlayerKeys, Player } from './Player';
 import { ServerCanvas } from './ServerCanvas';
 import { Server } from '../Server';
-import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_STATE, uuid } from '../../../common/common';
+import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_STATE, uuid } from '../common';
 
 export type GameState = -1 | 0 | 1 | number;
 
