@@ -61,6 +61,10 @@ export default class Game extends Component {
   
     this.socketConnection = io('http://localhost:4000');
   
+    this.socketConnection.on('@action/actionPropagation', msg => {
+      console.log(msg);
+    });
+  
     console.log(this.socketConnection);
   
   

@@ -46,10 +46,12 @@ export default class Game {
     this.gameState = GAME_STATE.started;
     this.player1.startListeningForPlayerActions();
     this.player2.startListeningForPlayerActions();
+    this.canvas.start();
     console.log(`[${this.id}]: Started`);
   }
   
   public stopGame(whoEnded: Player) {
+    this.canvas.stop();
     const whoStayed = whoEnded === this.player1 ? this.player2 : this.player1;
     !!whoStayed && whoStayed.socket.disconnect(true);
     console.log(`[${this.id}]: Player ${whoEnded.id} disconnected`);

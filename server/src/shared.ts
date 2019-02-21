@@ -11,6 +11,6 @@ export const GAME_ACTION = {
 };
 
 export const GAME_AREA = {
-  width: 1200,
-  height: 700,
+  width: 900,
+  height: 600,
 };
