@@ -32,8 +32,12 @@ export class Server {
   }
   
   destroyGame(game: Game) {
-    this.games.splice(this.games.indexOf(game), 1);
-    console.log(`[${game.id}]: Game destroyed`);
+    try {
+      this.games.splice(this.games.indexOf(game), 1);
+      console.log(`[${game.id}]: Game destroyed`);
+    } catch (e) {
+      console.log(e);
+    }
   }
   
   listenForConnections() {
@@ -52,7 +56,6 @@ export class Server {
     });
     this.server.listen(this.port);
     this.listenForConnections();
-  
     console.log(`Server up and running on port: ${this.port}`);
   }
 }

@@ -1,6 +1,9 @@
 import { Player } from './Player';
 import Game from './Game';
 import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_AREA } from '../common';
+import { performance } from 'perf_hooks';
+
+const VEL_MULTIPLIER_PER_MS = 0.869908481;
 
 
 export interface ICanvasElementPosition {
@@ -17,12 +20,12 @@ export interface ICanvasElement {
 
 export interface ICanvasFrameState {
   tick: number;
-  timestamp: Date;
+  timestamp: number;
   elements: ICanvasElement[];
 }
 
 export interface ICanvasQueuedAction {
-  timestamp: Date;
+  timestamp: number;
 }
 
 export interface ISyncData {
@@ -50,14 +53,17 @@ export class ServerCanvas {
     this.elements.push(playerTwo);
     this.tickLength = 1000 / ticksPerSecond;
     this.currentTick = 0;
-    this.previousTick = this.hrtimeInMs();
+    this.previousTick = ServerCanvas.hrtimeInMs();
     this.isRunning = false;
     this.broadcastFreq = ticksPerSecond * (10 / broadcastFrequencyPerTenSecs);
     this.game = game;
   }
   
-  public recalculatePositions(element: ICanvasElement, stepX = 0, stepY = 0) {
+  public static recalculatePositions(element: ICanvasElement, delta: number, stepX: number = 0, stepY: number = 0) {
     const recalcEl = { ...element };
+    
+    stepX = stepX / 60000 * delta;
+    stepY = stepY / 60000 * delta;
     
     if (stepX != 0) recalcEl.angle += stepX;
     if (recalcEl.angle > 360) recalcEl.angle = 0;
@@ -70,8 +76,8 @@ export class ServerCanvas {
     
     recalcEl.pos.x += recalcEl.vel.x;
     recalcEl.pos.y += recalcEl.vel.y;
-    recalcEl.vel.x *= 0.98;
-    recalcEl.vel.y *= 0.98;
+    recalcEl.vel.x *= VEL_MULTIPLIER_PER_MS ^ delta;
+    recalcEl.vel.y *= VEL_MULTIPLIER_PER_MS ^ delta;
     
     if (recalcEl.pos.x < 0) recalcEl.pos.x = GAME_AREA.width;
     if (recalcEl.pos.x > GAME_AREA.width) recalcEl.pos.x = 0;
@@ -81,7 +87,7 @@ export class ServerCanvas {
     return recalcEl;
   }
   
-  public mapKeysToMovementValues(player: Player) {
+  public static mapKeysToMovementValues(player: Player) {
     const { up, left, right } = player.activeKeys;
     up ? player.canvasElement.vel.y = -STEP_Y : player.canvasElement.vel.y = 0;
     if (right) player.canvasElement.vel.x = STEP_X;
@@ -89,22 +95,20 @@ export class ServerCanvas {
     else player.canvasElement.vel.x = 0;
   }
   
-  public calculateElementPosition(element: ICanvasElement | Player) {
+  public calculateElementPosition(element: ICanvasElement | Player, delta) {
     if (element instanceof Player) {
-      this.mapKeysToMovementValues(element);
-      this.recalculatePositions(element.canvasElement);
-      // console.log(element.canvasElement.pos);
+      ServerCanvas.mapKeysToMovementValues(element);
+      ServerCanvas.recalculatePositions(element.canvasElement, delta);
     } else {
-      this.recalculatePositions(element);
+      ServerCanvas.recalculatePositions(element, delta);
     }
   }
   
   public startFrameCalculation(delta) {
-    // if (delta > 0) console.log(`Delta > 0: => ${delta}`);
-    this.elements.forEach(element => this.calculateElementPosition(element));
+    this.elements.forEach(element => this.calculateElementPosition(element, delta));
   }
   
-  hrtimeInMs() {
+  static hrtimeInMs() {
     const time = process.hrtime();
     return time[0] * 1000 + time[1] / 1000000;
   };
@@ -113,12 +117,12 @@ export class ServerCanvas {
     try {
       if (!this.isRunning) return;
       setTimeout(this.loop.bind(this), this.tickLength);
-      const now = this.hrtimeInMs();
+      const now = ServerCanvas.hrtimeInMs();
       const delta = (now - this.previousTick) / 1000;
       this.startFrameCalculation(delta);
       this.previousTick = now;
       this.currentTick++;
-      this.lastRenderAt = Date.now() - this.startedAt;
+      this.lastRenderAt = performance.now() - this.startedAt;
       if (this.currentTick % this.broadcastFreq == 0) this.broadcastSyncData();
     } catch (e) {
       console.log(e);
@@ -137,7 +141,7 @@ export class ServerCanvas {
   start() {
     this.isRunning = true;
     this.loop();
-    this.startedAt = Date.now();
+    this.startedAt = performance.now();
   }
   
   stop() {

@@ -12,11 +12,11 @@ export interface IPlayerKeys {
 export interface IPlayerActionKeysData {
   keys: IPlayerKeys
   currentPosition: ICanvasElementPosition
-  timestamp: Date
+  timestamp: number
 }
 
 export interface IPAHistory extends IPlayerKeys {
-  timestamp: Date;
+  timestamp: number;
 }
 
 export class Player {

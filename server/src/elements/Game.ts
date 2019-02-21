@@ -1,14 +1,15 @@
 import { IPlayerKeys, Player } from './Player';
 import { ServerCanvas } from './ServerCanvas';
 import { Server } from '../Server';
-import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_STATE, uuid } from '../common';
+import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_STATE, uuid, SOCKET_GAME_STARTED } from '../common';
+import { performance } from 'perf_hooks';
 
 export type GameState = -1 | 0 | 1 | number;
 
 export default class Game {
   
   id: string;
-  startedAt: Date;
+  startedAt: number;
   gameState: GameState;
   player1: Player;
   player2: Player;
@@ -17,7 +18,7 @@ export default class Game {
   
   constructor(server: Server, player1: Player) {
     this.id = uuid();
-    this.startedAt = new Date();
+    this.startedAt = performance.now();
     this.player1 = player1;
     this.player1.game = this;
     this.player2 = null;
@@ -48,18 +49,30 @@ export default class Game {
   }
   
   public startGame() {
-    this.gameState = GAME_STATE.started;
-    this.player1.startListeningForPlayerActions();
-    this.player2.startListeningForPlayerActions();
-    this.canvas.start();
-    console.log(`[${this.id}]: Started`);
+    try {
+      this.gameState = GAME_STATE.started;
+      this.player1.startListeningForPlayerActions();
+      this.player2.startListeningForPlayerActions();
+      this.canvas.start();
+      this.broadcastToBoth(SOCKET_GAME_STARTED, {
+        gameId: this.id,
+      });
+      console.log(`[${this.id}]: Started`);
+    } catch (e) {
+      console.log(e);
+    }
   }
   
   public stopGame(whoEnded: Player) {
-    this.canvas.stop();
-    const whoStayed = whoEnded === this.player1 ? this.player2 : this.player1;
-    !!whoStayed && whoStayed.socket.disconnect(true);
-    console.log(`[${this.id}]: Player ${whoEnded.id} disconnected`);
-    this.server.destroyGame(this);
+    try {
+      console.log(`[${this.id}]: Player ${whoEnded.id} disconnected`);
+      if (!!!this.player2)
+        return this.server.destroyGame(this);
+      this.canvas.stop();
+      const whoStayed = whoEnded === this.player1 ? this.player2 : this.player1;
+      !!whoStayed && whoStayed.socket.disconnect(true);
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
