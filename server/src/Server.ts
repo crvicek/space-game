@@ -4,7 +4,6 @@ import * as socketio from 'socket.io';
 import * as Koa from 'koa';
 import Game from './elements/Game';
 import { Player } from './elements/Player';
-import { uuid } from './shared';
 
 export class Server {
   
