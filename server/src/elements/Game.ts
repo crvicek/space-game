@@ -1,7 +1,7 @@
 import { IPlayerKeys, Player } from './Player';
-import { GAME_STATE, uuid } from '../shared';
 import { ServerCanvas } from './ServerCanvas';
 import { Server } from '../Server';
+import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_STATE, uuid } from '../../../common/common';
 
 export type GameState = -1 | 0 | 1 | number;
 
@@ -30,15 +30,20 @@ export default class Game {
   public assignPlayerTwo(playerTwo: Player) {
     this.player2 = playerTwo;
     this.player2.game = this;
-    this.canvas = new ServerCanvas(this.player1, this.player2);
+    this.canvas = new ServerCanvas(this, this.player1, this.player2, 20, 10);
     console.log(`[${this.id}]: Player assigned to empty spot`);
     this.startGame();
   }
   
-  public broadcastPlayerAction(from: string, action: IPlayerKeys) {
+  public broadcastToBoth(action: string, data) {
+    this.player1.socket.emit(action, data);
+    this.player2.socket.emit(action, data);
+  }
+  
+  public broadcastPlayerAction(from: string, keys: IPlayerKeys) {
     const to = from === this.player1.id ? this.player2 : this.player1;
     to.socket.emit('@action/actionBroadcast', {
-      keys: action,
+      keys: keys,
     });
   }
   

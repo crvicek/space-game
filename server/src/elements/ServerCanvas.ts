@@ -1,8 +1,6 @@
 import { Player } from './Player';
-import { GAME_AREA } from '../shared';
-
-const STEP_Y = 5;
-const STEP_X = 5;
+import Game from './Game';
+import { STEP_X, STEP_Y, SOCKET_POSITION_SYNC, GAME_AREA } from '../../../common/common';
 
 
 export interface ICanvasElementPosition {
@@ -17,7 +15,6 @@ export interface ICanvasElement {
   vel: ICanvasElementPosition;
 }
 
-
 export interface ICanvasFrameState {
   tick: number;
   timestamp: Date;
@@ -28,36 +25,35 @@ export interface ICanvasQueuedAction {
   timestamp: Date;
 }
 
-export interface ICanvasState {
-  current: ICanvasFrameState;
-  history: ICanvasFrameState[];
-  queue: ICanvasQueuedAction[];
-  isRunning: boolean;
+export interface ISyncData {
+  player1: ICanvasElement;
+  player2: ICanvasElement;
+  elapsedTime: number;
 }
 
 export class ServerCanvas {
   
-  state: ICanvasState = {
-    current: undefined,
-    history: [],
-    queue: [],
-    isRunning: false,
-  };
-  
+  isRunning: boolean;
   tickLength: number;
   previousTick: number;
   currentTick: number;
+  broadcastFreq: number;
+  startedAt: number;
+  lastRenderAt: number;
   
   elements: (ICanvasElement | Player)[];
+  game: Game;
   
-  constructor(playerOne: Player, playerTwo: Player) {
+  constructor(game: Game, playerOne: Player, playerTwo: Player, ticksPerSecond: number = 20, broadcastFrequencyPerTenSecs: number = 10) {
     this.elements = [];
     this.elements.push(playerOne);
     this.elements.push(playerTwo);
-    this.tickLength = 1000 / 20;
+    this.tickLength = 1000 / ticksPerSecond;
     this.currentTick = 0;
     this.previousTick = this.hrtimeInMs();
-    this.state.isRunning = false;
+    this.isRunning = false;
+    this.broadcastFreq = ticksPerSecond * (10 / broadcastFrequencyPerTenSecs);
+    this.game = game;
   }
   
   public recalculatePositions(element: ICanvasElement, stepX = 0, stepY = 0) {
@@ -104,6 +100,7 @@ export class ServerCanvas {
   }
   
   public startFrameCalculation(delta) {
+    // if (delta > 0) console.log(`Delta > 0: => ${delta}`);
     this.elements.forEach(element => this.calculateElementPosition(element));
   }
   
@@ -114,31 +111,36 @@ export class ServerCanvas {
   
   loop() {
     try {
-      if (!this.state.isRunning) return;
+      if (!this.isRunning) return;
       setTimeout(this.loop.bind(this), this.tickLength);
       const now = this.hrtimeInMs();
       const delta = (now - this.previousTick) / 1000;
       this.startFrameCalculation(delta);
       this.previousTick = now;
       this.currentTick++;
-      if (this.currentTick % 20 == 0) this.broadcastSyncData(this.currentTick, now, this.elements);
+      this.lastRenderAt = Date.now() - this.startedAt;
+      if (this.currentTick % this.broadcastFreq == 0) this.broadcastSyncData();
     } catch (e) {
       console.log(e);
     }
   };
   
-  broadcastSyncData(tick, time, data) {
-    // console.log(tick);
-    // console.log(time);
-    // console.log(data);
+  broadcastSyncData() {
+    const data: ISyncData = {
+      player1: this.game.player1.canvasElement,
+      player2: this.game.player2.canvasElement,
+      elapsedTime: this.lastRenderAt,
+    };
+    this.game.broadcastToBoth(SOCKET_POSITION_SYNC, data);
   }
   
   start() {
-    this.state.isRunning = true;
+    this.isRunning = true;
     this.loop();
+    this.startedAt = Date.now();
   }
   
   stop() {
-    this.state.isRunning = false;
+    this.isRunning = false;
   }
 }
