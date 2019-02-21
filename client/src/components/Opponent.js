@@ -52,19 +52,18 @@ export default class Ship {
     // Draw the SpaceCraft
     const color = ['red', 'lightblue', 'yellow', 'gray']
     // const colorPick = () => Math.floor(Math.random()*color.length)
-    const ctx = context
-    // console.log('stx ship', ctx)
-    ctx.save()
-    ctx.translate(this.pos.posX, this.pos.posY);
-    ctx.rotate(this.pos.angle * Math.PI / 180);
-    ctx.beginPath();
-    ctx.moveTo(0, - 20);
-    ctx.lineTo(-10, 20);
-    ctx.lineTo(10, 20);
-    ctx.lineTo(0, -20);
-    ctx.closePath();
-    ctx.fillStyle = color[1]
-    ctx.fill()
-    ctx.restore()
+    const opp = context
+    opp.save()
+    opp.translate(this.pos.posX, this.pos.posY);
+    opp.rotate(this.pos.angle * Math.PI / 180);
+    opp.beginPath();
+    opp.moveTo(0, - 20);
+    opp.lineTo(-10, 20);
+    opp.lineTo(10, 20);
+    opp.lineTo(0, -20);
+    opp.closePath();
+    opp.fillStyle = color[1]
+    opp.fill()
+    opp.restore()
   }
 }

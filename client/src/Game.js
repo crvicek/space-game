@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Ship from './components/MyShip'
+import Opponent from './components/Opponent'
 import Planet from './components/Planet'
 import Fire from './components/Fire';
 import io from 'socket.io-client';
@@ -17,6 +18,18 @@ const space = 32
 let step = 10
 const planet = new Planet
 
+let opponentSt = {
+  angle: 0,
+  positionX: w / 2,
+  positionY: h / 2,
+  stepX: 0,
+  stepY: 0,
+  context: null,
+  w: w,
+  h: h,
+  lastFire: 0,
+}
+
 export default class Game extends Component {
   constructor(props) {
     super(props);
@@ -29,15 +42,15 @@ export default class Game extends Component {
       context: null,
       w: w,
       h: h,
-      shoot: false,
       lastFire: 0,
       commands: {},
     }
 
+
     // Generating the objects
     this.ship = new Ship(this.state)
+    this.opponent = new Ship(opponentSt)
     this.fire = []
-    // console.log('ship in framerate', this.ship.pos)
 
     // Communication with a server
     this.activeKeys = {
@@ -60,21 +73,13 @@ export default class Game extends Component {
     }
 
 
-
     this.socketConnection = io('http://localhost:4000');
-
     console.log('Client Game:', this.socketConnection);
 
-
-
-  
     this.socketConnection.on('@action/actionPropagation', msg => {
       console.log(msg);
     });
-  
-    console.log(this.socketConnection);
-  
-  
+
     this.updateAnimationState = this.updateAnimationState.bind(this);
   }
 
@@ -84,14 +89,13 @@ export default class Game extends Component {
 
   componentDidMount() {
     this.rAF = requestAnimationFrame(this.updateAnimationState)
-    const context = this.refs.mycanvas.getContext('2d');
-    this.setState({ context: context });
+    let context = this.refs.mycanvas.getContext('2d');
+    this.setState({ context: context })
+    opponentSt.context = context
 
     this.socketConnection.on('@action/actionBroadcast', data => {
       this.setState({ commands: data })
-      console.log('works')
-    }
-    )
+    })
 
     document.addEventListener('keydown', this.handleKeyState)
     document.addEventListener('keyup', this.stopKeyState)
@@ -100,6 +104,7 @@ export default class Game extends Component {
   componentWillUnmount() {
     cancelAnimationFrame(this.rAF);
   }
+
 
   // Handles all animations
   updateAnimationState() {
@@ -115,9 +120,10 @@ export default class Game extends Component {
     // Some planets
     planet.render(this.state)
 
+    console.log('opp state', this.state.opponentSt)
     // Ship
     this.ship.render(this.state)
-    // spcCraft.render(this.state)
+    this.opponent.render(opponentSt)
 
     if (this.fire.length > 0) this.fire.map(x => x.render(this.state))
 
@@ -135,6 +141,16 @@ export default class Game extends Component {
       this.setState({ lastFire: Date.now() })
     }
 
+    // Handle opponent actions
+    if (this.state.commands.keys !== undefined) {
+      this.state.commands.keys.up ? opponentSt.stepY = -step : opponentSt.stepY = 0
+
+      if (this.state.commands.keys.right) opponentSt.stepX = step
+      else if (this.state.commands.keys.left) opponentSt.stepX = -step
+      else opponentSt.stepX = 0
+    }
+
+    if (this.state.commands.keys !== undefined) console.log('works', this.state.commands.keys.up)
 
     // Clear frame before redrawing
     bcg.restore();
@@ -142,7 +158,6 @@ export default class Game extends Component {
     // Render next frame
     this.rAF = requestAnimationFrame(this.updateAnimationState);
   }
-
 
   stopKeyState = (event) => {
     if (event.keyCode === left) {
@@ -157,6 +172,7 @@ export default class Game extends Component {
     if (event.keyCode === space) {
       this.activeKeys.space = false
     }
+    this.socketConnection.emit('@actions/RECEIVE_INPUT', this.serverExport);
   }
 
   handleKeyState = (event) => {
@@ -172,29 +188,12 @@ export default class Game extends Component {
     if (event.keyCode === space) {
       this.activeKeys.space = true
     }
-    console.log('commands', this.state.commands)
-    console.log('Emitting: ', this.serverExport.keys, this.serverExport.currentPosition, this.serverExport.timestamp);
     this.socketConnection.emit('@actions/RECEIVE_INPUT', this.serverExport);
 
   }
 
-  // sendShipPosition = () => {
-  //   let sPosX = this.ship.pos.posX
-  //   let sPosY = this.ship.pos.posY
-  //   return {
-  //     x: sPosX,
-  //     y: sPosY,
-  //   }
-  // }
-
   render() {
-
     this.fire = this.fire.filter(blt => blt.delete === false)
-    // console.log('ship',this.ship, 'time', Date.now())
-
-
-
-    // console.log('shpi pos:', Math.floor(sPosX))
 
     // Handle overflow
     if (this.state.positionX > w) { this.setState({ positionX: 0 }) }
