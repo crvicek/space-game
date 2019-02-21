@@ -73,7 +73,7 @@ export default class Game extends Component {
     }
 
 
-    this.socketConnection = io('http://localhost:4000');
+    this.socketConnection = io('ws://protected-fortress-69520.herokuapp.com');
     console.log('Client Game:', this.socketConnection);
 
     this.socketConnection.on('@action/actionPropagation', msg => {
@@ -120,7 +120,6 @@ export default class Game extends Component {
     // Some planets
     planet.render(this.state)
 
-    console.log('opp state', this.state.opponentSt)
     // Ship
     this.ship.render(this.state)
     this.opponent.render(opponentSt)
