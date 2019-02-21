@@ -4,19 +4,18 @@ import Planet from './components/Planet'
 import Fire from './components/Fire';
 import io from 'socket.io-client';
 
-
+// Screen size
 const w = 900
 const h = 600
 
+// Key variables
 const left = 37
 const up = 38
 const right = 39
-const down = 40
 const space = 32
 
 let step = 10
 const planet = new Planet
-
 
 export default class Game extends Component {
   constructor(props) {
@@ -32,7 +31,14 @@ export default class Game extends Component {
       h: h,
       shoot: false,
       lastFire: 0,
+      commands: {},
     }
+
+    // Generating the objects
+    this.ship = new Ship(this.state)
+    this.fire = []
+    // console.log('ship in framerate', this.ship.pos)
+
     // Communication with a server
     this.activeKeys = {
       up: false,
@@ -41,10 +47,11 @@ export default class Game extends Component {
       space: false,
     }
 
-    this.elementPosition = {
-      x: 0,
-      y: 0
-    }
+    this.elementPosition =
+      {
+        x: this.ship.pos.velX,
+        y: this.ship.pos.velY,
+      }
 
     this.serverExport = {
       keys: this.activeKeys,
@@ -54,16 +61,12 @@ export default class Game extends Component {
 
 
 
-    // Generating the objects
-    this.ship = new Ship(this.state)
-    this.fire = []
-    // console.log('ship in framerate', this.ship.pos)
-  
     this.socketConnection = io('http://localhost:4000');
-  
-    console.log(this.socketConnection);
-  
-  
+
+    console.log('Client Game:', this.socketConnection);
+
+
+
     this.updateAnimationState = this.updateAnimationState.bind(this);
   }
 
@@ -76,9 +79,14 @@ export default class Game extends Component {
     const context = this.refs.mycanvas.getContext('2d');
     this.setState({ context: context });
 
+    this.socketConnection.on('@action/actionBroadcast', data => {
+      this.setState({ commands: data })
+      console.log('works')
+    }
+    )
+
     document.addEventListener('keydown', this.handleKeyState)
     document.addEventListener('keyup', this.stopKeyState)
-
   }
 
   componentWillUnmount() {
@@ -106,42 +114,28 @@ export default class Game extends Component {
     if (this.fire.length > 0) this.fire.map(x => x.render(this.state))
 
     // Handle key actions
-    //   switch (this.activeKeys) {
-    //     case up:
-    //       this.setState({ stepY: - step })
-    //     case left:
-    //       this.setState({ stepX: -step })
-    //     case right:
-    //       this.setState({ stepX: step })
-    //     default:
-    //       this.setState({
-    //         stepX: 0,
-    //         stepY: 0,
-    //       })
-    // }
-
     this.activeKeys.up ? this.setState({ stepY: - step }) : this.setState({ stepY: 0 })
 
     if (this.activeKeys.right) { this.setState({ stepX: step }) }
     else if (this.activeKeys.left) { this.setState({ stepX: -step }) }
     else { this.setState({ stepX: 0 }) }
 
+    // Bullet shoot interval and key handler
     if (this.activeKeys.space && Date.now() - this.state.lastFire > 200) {
       const bullet = new Fire(this.ship.pos)
       this.addObject(bullet, 'fire')
-      this.setState({lastFire: Date.now()})
+      this.setState({ lastFire: Date.now() })
     }
-  
-    // console.log(this.fire)
+
 
     // Clear frame before redrawing
     bcg.restore();
 
-    // render next frame
+    // Render next frame
     this.rAF = requestAnimationFrame(this.updateAnimationState);
   }
 
-  
+
   stopKeyState = (event) => {
     if (event.keyCode === left) {
       this.activeKeys.left = false
@@ -170,40 +164,18 @@ export default class Game extends Component {
     if (event.keyCode === space) {
       this.activeKeys.space = true
     }
-    console.log('Emitting: ' + this.serverExport);
+    console.log('commands', this.state.commands)
+    console.log('Emitting: ', this.serverExport.keys, this.serverExport.currentPosition, this.serverExport.timestamp);
     this.socketConnection.emit('@actions/RECEIVE_INPUT', this.serverExport);
+
   }
 
-  // stopKeyPress = (event) => {
-  //   if (event.keyCode === left || right) {
-  //     this.setState({ stepX: 0 })
-  //   }
-  //   if (event.keyCode === up) {
-  //     this.setState({ stepY: 0 })
-  //   }
-  //   if (event.keyCode === space) {
-  //     this.setState({ shoot: false })
-  //   }
-  // }
-
-  // handleKeyPress = (event) => {
-  //   // event.preventDefault()
-  //   if (event.keyCode === left) {
-  //     this.setState({ stepX: - step })
-  //   }
-  //   if (event.keyCode === right) {
-  //     this.setState({ stepX: step })
-  //   }
-  //   if (event.keyCode === up) {
-  //     this.setState({ stepY: - step })
-  //   }
-  //   // if (event.keyCode === down) {
-  //   //   this.setState({ stepY: step })
-  //   // }
-  //   if (event.keyCode === space) {
-  //     const bullet = new Fire(this.ship.pos)
-  //     this.addObject(bullet, 'fire')
-  //     // this.setState({ shoot: true })
+  // sendShipPosition = () => {
+  //   let sPosX = this.ship.pos.posX
+  //   let sPosY = this.ship.pos.posY
+  //   return {
+  //     x: sPosX,
+  //     y: sPosY,
   //   }
   // }
 
@@ -213,6 +185,8 @@ export default class Game extends Component {
     // console.log('ship',this.ship, 'time', Date.now())
 
 
+
+    // console.log('shpi pos:', Math.floor(sPosX))
 
     // Handle overflow
     if (this.state.positionX > w) { this.setState({ positionX: 0 }) }

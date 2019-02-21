@@ -11,6 +11,7 @@ export default class Fire {
     }
   }
 
+
   // acc() {
   //   this.vel.x -= Math.sin(-this.angle * Math.PI / 180) * 0.3;
   //   this.vel.y -= Math.cos(-this.angle * Math.PI / 180) * 0.3;
@@ -26,6 +27,7 @@ export default class Fire {
     // this.posX += this.vel.x * 0.5
     // this.posY += this.vel.y * 0.5
 
+    // Delete objects if they're out of screen
     if (
       this.posX > 900 || this.posX < 0 ||
       this.posY > 600 || this.posY < 0
