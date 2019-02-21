@@ -1,4 +1,4 @@
-import { GAME_ACTION, uuid } from '../shared';
+import { GAME_ACTION, uuid } from '../common';
 import { ICanvasElement, ICanvasElementPosition } from './ServerCanvas';
 import Game from './Game';
 
