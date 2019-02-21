@@ -1,5 +1,5 @@
 import { GAME_ACTION, uuid } from '../shared';
-import { ICanvasElementPosition } from './ServerCanvas';
+import { ICanvasElement, ICanvasElementPosition } from './ServerCanvas';
 import Game from './Game';
 
 export interface IPlayerKeys {
@@ -28,6 +28,7 @@ export class Player {
   score: number;
   socket: any;
   game: Game;
+  canvasElement: ICanvasElement;
   
   constructor(name: string, socket: any) {
     this.id = uuid();
@@ -41,6 +42,12 @@ export class Player {
     };
     this.history = [];
     this.score = 0;
+    this.canvasElement = {
+      id: this.id,
+      pos: { x: 0, y: 0 },
+      angle: 0,
+      vel: { x: 0, y: 0 },
+    };
     this.socket = socket;
     this.socket.on('disconnect', () => this.playerDisconnected());
   }

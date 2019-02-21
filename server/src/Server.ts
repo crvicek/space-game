@@ -2,8 +2,8 @@ import 'reflect-metadata';
 import { useKoaServer } from "routing-controllers";
 import * as socketio from 'socket.io';
 import * as Koa from 'koa';
-import Game from './entity/Game';
-import { Player } from './entity/Player';
+import Game from './elements/Game';
+import { Player } from './elements/Player';
 import { uuid } from './shared';
 
 export class Server {
@@ -39,7 +39,6 @@ export class Server {
   
   listenForConnections() {
     this.io.on('connection', socket => {
-      console.log('Client connected');
       this.assignGame(null, socket);
     });
   }

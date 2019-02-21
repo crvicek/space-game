@@ -67,6 +67,14 @@ export default class Game extends Component {
 
 
 
+  
+    this.socketConnection.on('@action/actionPropagation', msg => {
+      console.log(msg);
+    });
+  
+    console.log(this.socketConnection);
+  
+  
     this.updateAnimationState = this.updateAnimationState.bind(this);
   }
 
