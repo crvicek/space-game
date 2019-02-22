@@ -77,7 +77,7 @@ export default class Game extends Component {
     }
 
     // Server
-    this.socketConnection = io('ws://protected-fortress-69520.herokuapp.com');
+    this.socketConnection = io('wss://lit-reef-92926.herokuapp.com');
     console.log('Client Game:', this.socketConnection);
 
     this.socketConnection.on('@action/actionPropagation', msg => {
