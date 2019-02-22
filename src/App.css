@@ -8,6 +8,20 @@
   pointer-events: none;
 }
 
+.Game-stats {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  color: white;
+}
+button {
+  color: white;
+  background: none;
+  position: absolute;
+  top: 30px;
+  left: 150px;
+}
+
 .Game {
   margin: auto;
 }

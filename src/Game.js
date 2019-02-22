@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import Ship from './components/MyShip'
-import Opponent from './components/Opponent'
 import Planet from './components/Planet'
 import Fire from './components/Fire';
 import io from 'socket.io-client';
@@ -16,7 +15,6 @@ const right = 39
 const space = 32
 
 let step = 10
-const planet = new Planet
 
 let opponentSt = {
   angle: 0,
@@ -28,6 +26,9 @@ let opponentSt = {
   w: w,
   h: h,
   lastFire: 0,
+  clr: 'lightblue',
+  shpX: 0,
+  shpY: 0,
 }
 
 export default class Game extends Component {
@@ -43,11 +44,14 @@ export default class Game extends Component {
       w: w,
       h: h,
       lastFire: 0,
+      clr: '#E5D352',
       commands: {},
+      poopMode: false,
     }
 
 
     // Generating the objects
+    this.planet = new Planet(this.state)
     this.ship = new Ship(this.state)
     this.opponent = new Ship(opponentSt)
     this.fire = []
@@ -72,7 +76,7 @@ export default class Game extends Component {
       timestamp: Date.now()
     }
 
-
+    // Server
     this.socketConnection = io('ws://protected-fortress-69520.herokuapp.com');
     console.log('Client Game:', this.socketConnection);
 
@@ -118,13 +122,15 @@ export default class Game extends Component {
     bcg.fillRect(0, 0, w, h)
 
     // Some planets
-    planet.render(this.state)
+    this.planet.render(this.state)
 
     // Ship
-    this.ship.render(this.state)
     this.opponent.render(opponentSt)
+    this.ship.render(this.state)
 
-    if (this.fire.length > 0) this.fire.map(x => x.render(this.state))
+    if (this.state.poopMode === false) {
+      if (this.fire.length > 0) this.fire.map(x => x.render(this.state))
+    }
 
     // Handle key actions
     this.activeKeys.up ? this.setState({ stepY: - step }) : this.setState({ stepY: 0 })
@@ -134,7 +140,7 @@ export default class Game extends Component {
     else { this.setState({ stepX: 0 }) }
 
     // Bullet shoot interval and key handler
-    if (this.activeKeys.space && Date.now() - this.state.lastFire > 200) {
+    if (this.state.poopMode === false && this.activeKeys.space && Date.now() - this.state.lastFire > 200) {
       const bullet = new Fire(this.ship.pos)
       this.addObject(bullet, 'fire')
       this.setState({ lastFire: Date.now() })
@@ -191,8 +197,13 @@ export default class Game extends Component {
 
   }
 
+  handleToggle = () => {
+    if (this.state.poopMode) { this.setState({ poopMode: false }) } else { this.setState({ poopMode: true }) }
+  }
+
   render() {
     this.fire = this.fire.filter(blt => blt.delete === false)
+
 
     // Handle overflow
     if (this.state.positionX > w) { this.setState({ positionX: 0 }) }
@@ -201,7 +212,11 @@ export default class Game extends Component {
     if (this.state.positionY < 0) { this.setState({ positionY: h }) }
 
     return (
-      <canvas width={w} height={h} ref='mycanvas' className='Game'></canvas>
+      <div>
+        <span className='Game-stats' >Game stats: {this.state.stepY}</span>
+        <button onClick={this.handleToggle} >Toggle Mode</button>
+        <canvas width={w} height={h} ref='mycanvas' className='Game'></canvas>
+      </div>
     )
   }
 }

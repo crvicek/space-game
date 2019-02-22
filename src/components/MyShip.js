@@ -21,7 +21,7 @@ export default class Ship {
 
   // Render ship
   render(state) {
-    const { context, stepX, stepY, w, h } = state;
+    const { context, stepX, stepY, w, h, clr } = state;
 
     // Rotate
     if (stepX) { this.pos.angle += stepX }
@@ -50,21 +50,36 @@ export default class Ship {
 
 
     // Draw the SpaceCraft
-    const color = ['red', 'lightblue', 'yellow', 'gray']
-    // const colorPick = () => Math.floor(Math.random()*color.length)
     const ctx = context
-    // console.log('stx ship', ctx)
+
     ctx.save()
     ctx.translate(this.pos.posX, this.pos.posY);
     ctx.rotate(this.pos.angle * Math.PI / 180);
-    ctx.beginPath();
-    ctx.moveTo(0, - 20);
-    ctx.lineTo(-10, 20);
-    ctx.lineTo(10, 20);
-    ctx.lineTo(0, -20);
-    ctx.closePath();
-    ctx.fillStyle = color[1]
-    ctx.fill()
-    ctx.restore()
+
+    if (state.poopMode === true) {
+      // Image
+      var img = new Image()
+      img.src = 'https://webstockreview.net/images/flying-clipart-person-15.png'
+      // img.src = 'https://www.freepngimg.com/thumb/spaceship/24752-5-spaceship.png'
+      ctx.drawImage(img, -20, -30, 40, 60)
+    } else {
+      ctx.beginPath();
+      ctx.fillStyle = clr
+      ctx.moveTo(0, - 20);
+      ctx.bezierCurveTo(0, 5, -10, 10, -10, 20)
+      ctx.bezierCurveTo(-5, 15, 5, 15, 10, 20)
+      ctx.bezierCurveTo(10, 10, 0, 5, 0, -20)
+      
+      if(stepY) {
+      ctx.fillStyle = 'orange'
+      ctx.moveTo(0, 20);
+      ctx.quadraticCurveTo(-8, 35, 0, 40);
+      ctx.quadraticCurveTo(8, 35, 0, 20);
+      }
+
+      ctx.closePath();
+      ctx.fill()
+      ctx.restore()
+    }
   }
 }
