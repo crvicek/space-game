@@ -3,6 +3,7 @@ import Ship from './components/MyShip'
 import Planet from './components/Planet'
 import Fire from './components/Fire';
 import io from 'socket.io-client';
+import './App.css';
 
 // Screen size
 const w = 900
@@ -48,7 +49,6 @@ export default class Game extends Component {
       commands: {},
       poopMode: false,
     }
-
 
     // Generating the objects
     this.planet = new Planet(this.state)
@@ -128,9 +128,7 @@ export default class Game extends Component {
     this.opponent.render(opponentSt)
     this.ship.render(this.state)
 
-    if (this.state.poopMode === false) {
       if (this.fire.length > 0) this.fire.map(x => x.render(this.state))
-    }
 
     // Handle key actions
     this.activeKeys.up ? this.setState({ stepY: - step }) : this.setState({ stepY: 0 })
@@ -140,7 +138,7 @@ export default class Game extends Component {
     else { this.setState({ stepX: 0 }) }
 
     // Bullet shoot interval and key handler
-    if (this.state.poopMode === false && this.activeKeys.space && Date.now() - this.state.lastFire > 200) {
+    if (this.activeKeys.space && Date.now() - this.state.lastFire > 200) {
       const bullet = new Fire(this.ship.pos)
       this.addObject(bullet, 'fire')
       this.setState({ lastFire: Date.now() })

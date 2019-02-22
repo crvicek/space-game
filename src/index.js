@@ -1,19 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import JSGame from './components/JSGame';
-
 import * as serviceWorker from './serviceWorker';
 import Game from './Game';
 
 
 
-
-{/* <App />  */ }
-
-
-{/* <JSGame /> */ }
 ReactDOM.render(
   
   <Game />

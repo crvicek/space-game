@@ -19,10 +19,7 @@ export default class Fire {
     this.delete = true
   }
   render(state) {
-    console.log('this.posX', this.posX)
-    console.log('mode', state.poopMode)
     if (state.poopMode === false) {
-
       this.acc()
       this.posX += this.vel.x * 0.9
       this.posY += this.vel.y * 0.9
@@ -36,30 +33,28 @@ export default class Fire {
 
     const fr = state.context
     fr.save();
-    // fr.rotate(this.angle * Math.PI / 180)
-    fr.translate(this.posX, this.posY)
-    
+
+    if (state.poopMode === false) {
+
+      fr.translate(this.posX, this.posY)
+    } else {
+      fr.translate(state.posX, state.posY)
+    }
+
+    fr.rotate(this.angle * Math.PI / 180)
+
     if (state.poopMode === true) {
-        // Image
-        var img = new Image()
-        img.src = 'https://clipart.info/images/ccovers/1496184260Poop-Emoji-Png.png'
-        fr.drawImage(img, 0, 0, 40, 40)
-      // fr.beginPath();
-      // fr.arc(0, 0, 2, 0, 2 * Math.PI)
-      // fr.fillStyle = '#yellow'
-      // fr.fill()
+      // Image
+      var img = new Image()
+      img.src = 'https://clipart.info/images/ccovers/1496184260Poop-Emoji-Png.png'
+      fr.drawImage(img, -20, -20, 20, 20)
     } else {
 
-      let img = new Image()
-      img.src = 'https://clipart.info/images/ccovers/1496184260Poop-Emoji-Png.png'
-      fr.drawImage(img, 0, 0, 40, 40)
-
-      
       // Shape
-      // fr.beginPath();
-      // fr.arc(0, 0, 2, 0, 2 * Math.PI)
-      // fr.fillStyle = '#C44536'
-      // fr.fill()
+      fr.beginPath();
+      fr.arc(0, 0, 2, 0, 2 * Math.PI)
+      fr.fillStyle = '#C44536'
+      fr.fill()
     }
     fr.restore()
   }
